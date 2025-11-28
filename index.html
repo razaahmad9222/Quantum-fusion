@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Fusion v9.0 - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --quantum-blue: #1a365d;
+            --neural-teal: #2d7d8b;
+            --photon-cyan: #00d4ff;
+            --void-black: #0a0a0a;
+            --platinum-silver: #e2e8f0;
+            --quantum-white: #f7fafc;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --critical-red: #e53e3e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--void-black);
+            color: var(--quantum-white);
+            overflow-x: hidden;
+        }
+        
+        .quantum-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--void-black) 0%, var(--quantum-blue) 50%, var(--neural-teal) 100%);
+            opacity: 0.1;
+        }
+        
+        .quantum-circuit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('resources/quantum_circuit_bg.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .glass-card {
+            background: rgba(26, 54, 93, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(45, 125, 139, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+        
+        .quantum-glow {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: var(--success-green);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-warning {
+            background: var(--warning-amber);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-error {
+            background: var(--critical-red);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .nav-link {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--photon-cyan);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--photon-cyan);
+            transition: width 0.2s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .quantum-button {
+            background: linear-gradient(135deg, var(--quantum-blue), var(--neural-teal));
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: var(--quantum-white);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quantum-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .quantum-button:active {
+            transform: translateY(0);
+        }
+        
+        .number-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(10, 10, 10, 0.7), rgba(10, 10, 10, 0.7)), url('resources/quantum_entanglement.png');
+            background-size: cover;
+            background-position: center;
+            min-height: 40vh;
+        }
+        
+        .arb-row {
+            transition: all 0.2s ease;
+        }
+        
+        .arb-row:hover {
+            background: rgba(45, 125, 139, 0.1);
+        }
+        
+        .profit-positive {
+            color: var(--success-green);
+        }
+        
+        .profit-negative {
+            color: var(--critical-red);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top: 2px solid var(--photon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #quantum-visualizer {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-bg"></div>
+    <div class="quantum-circuit"></div>
+    
+    <!-- Navigation -->
+    <nav class="glass-card mx-6 mt-6 p-4 sticky top-6 z-50">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="resources/logo.png" alt="Quantum Fusion" class="w-10 h-10">
+                <h1 class="text-xl font-bold">Quantum Fusion v9.0</h1>
+            </div>
+            <div class="flex items-center space-x-8">
+                <a href="index.html" class="nav-link text-photon-cyan font-semibold">Dashboard</a>
+                <a href="trading.html" class="nav-link">Trading</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <div class="flex items-center">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-sm">System Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section mx-6 mt-6 rounded-2xl p-8">
+        <div class="max-w-4xl">
+            <h2 class="text-5xl font-bold mb-4 bg-gradient-to-r from-photon-cyan to-neural-teal bg-clip-text text-transparent">
+                Quantum Arbitrage Engine
+            </h2>
+            <p class="text-xl text-platinum-silver mb-6">
+                Advanced quantum-powered trading system with real-time arbitrage detection and execution
+            </p>
+            <div class="flex space-x-4">
+                <button class="quantum-button" onclick="startQuantumAnalysis()">
+                    Start Analysis
+                </button>
+                <button class="quantum-button" onclick="emergencyStop()">
+                    Emergency Stop
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard -->
+    <main class="mx-6 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column - Metrics -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card metric-card p-6" onclick="showMetricDetails('pnl')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-platinum-silver">Total PNL</h3>
+                        <span class="status-indicator status-online"></span>
+                    </div>
+                    <div class="text-3xl font-bold number-counter profit-positive" id="pnl-counter">
+                        $0.00
+                    </div>
+                    <div class="text-sm text-platinum-silver mt-2">+12.4% this week</div>
+                </div>
+                
+                <div class="glass-card metric-card p-6" onclick="showMetricDetails('success')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-platinum-silver">Success Rate</h3>
+                        <span class="status-indicator status-online"></span>
+                    </div>
+                    <div class="text-3xl font-bold number-counter" id="success-counter">
+                        0%
+                    </div>
+                    <div class="text-sm text-platinum-silver mt-2">Last 100 trades</div>
+                </div>
+                
+                <div class="glass-card metric-card p-6" onclick="showMetricDetails('cycles')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-platinum-silver">Active Cycles</h3>
+                        <span class="status-indicator status-warning"></span>
+                    </div>
+                    <div class="text-3xl font-bold number-counter" id="cycles-counter">
+                        0
+                    </div>
+                    <div class="text-sm text-platinum-silver mt-2">Currently executing</div>
+                </div>
+            </div>
+
+            <!-- Quantum State Visualizer -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Quantum State Visualizer</h3>
+                <div id="quantum-visualizer" class="w-full h-64 bg-black rounded-lg"></div>
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="text-sm text-platinum-silver">
+                        <span class="status-indicator status-online"></span>
+                        Quantum Algorithm: DE-VQE Optimizer
+                    </div>
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Live Arbitrage Opportunities -->
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold">Live Arbitrage Opportunities</h3>
+                    <button class="quantum-button text-sm px-4 py-2" onclick="refreshOpportunities()">
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-platinum-silver text-sm">
+                                <th class="pb-3">Trading Pair</th>
+                                <th class="pb-3">Spread</th>
+                                <th class="pb-3">Potential Profit</th>
+                                <th class="pb-3">Risk Level</th>
+                                <th class="pb-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opportunities-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - System Status -->
+        <div class="space-y-6">
+            
+            <!-- System Health -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-6">System Health</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-platinum-silver">Circuit Breaker</span>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-online"></span>
+                            <span class="text-sm">Closed</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-platinum-silver">Quantum Core</span>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-online"></span>
+                            <span class="text-sm">Operational</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-platinum-silver">Bybit Connection</span>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-online"></span>
+                            <span class="text-sm">Connected</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-platinum-silver">Risk Engine</span>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-warning"></span>
+                            <span class="text-sm">Monitoring</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-neural-teal">
+                    <div class="text-sm text-platinum-silver mb-2">System Load</div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-photon-cyan h-2 rounded-full" style="width: 67%" id="system-load"></div>
+                    </div>
+                    <div class="text-xs text-platinum-silver mt-1">67% - Optimal Performance</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-6">Quick Actions</h3>
+                
+                <div class="space-y-3">
+                    <button class="w-full quantum-button text-left" onclick="executeQuickTrade()">
+                        ⚡ Quick Arbitrage
+                    </button>
+                    <button class="w-full quantum-button text-left" onclick="openRiskPanel()">
+                        🛡️ Risk Settings
+                    </button>
+                    <button class="w-full quantum-button text-left" onclick="viewLogs()">
+                        📊 View Logs
+                    </button>
+                    <button class="w-full quantum-button text-left" onclick="exportData()">
+                        💾 Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-6">Recent Trades</h3>
+                
+                <div class="space-y-3" id="recent-trades">
+                    <!-- Populated by JavaScript -->
+                </div>
+                
+                <button class="w-full mt-4 text-photon-cyan text-sm hover:underline" onclick="viewAllTrades()">
+                    View All Trades →
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mx-6 mt-16 mb-6 p-6 glass-card text-center">
+        <p class="text-platinum-silver text-sm">
+            © 2025 Quantum Fusion v9.0 - Advanced Quantum Arbitrage Trading System
+        </p>
+    </footer>
+
+    <!-- Modals -->
+    <div id="metric-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="glass-card p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4" id="modal-title">Metric Details</h3>
+            <div id="modal-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button class="quantum-button mt-6" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

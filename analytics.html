@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Fusion v9.0 - Analytics & Logs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --quantum-blue: #1a365d;
+            --neural-teal: #2d7d8b;
+            --photon-cyan: #00d4ff;
+            --void-black: #0a0a0a;
+            --platinum-silver: #e2e8f0;
+            --quantum-white: #f7fafc;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --critical-red: #e53e3e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--void-black);
+            color: var(--quantum-white);
+            overflow-x: hidden;
+        }
+        
+        .quantum-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--void-black) 0%, var(--quantum-blue) 50%, var(--neural-teal) 100%);
+            opacity: 0.1;
+        }
+        
+        .quantum-circuit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('resources/quantum_circuit_bg.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
+        
+        .glass-card {
+            background: rgba(26, 54, 93, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(45, 125, 139, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: var(--success-green);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-warning {
+            background: var(--warning-amber);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-error {
+            background: var(--critical-red);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .nav-link {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--photon-cyan);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--photon-cyan);
+            transition: width 0.2s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .quantum-button {
+            background: linear-gradient(135deg, var(--quantum-blue), var(--neural-teal));
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: var(--quantum-white);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quantum-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .quantum-button:active {
+            transform: translateY(0);
+        }
+        
+        .profit-positive {
+            color: var(--success-green);
+        }
+        
+        .profit-negative {
+            color: var(--critical-red);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top: 2px solid var(--photon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .log-entry {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .log-entry:hover {
+            background: rgba(45, 125, 139, 0.1);
+        }
+        
+        .log-level-info {
+            color: var(--photon-cyan);
+        }
+        
+        .log-level-warning {
+            color: var(--warning-amber);
+        }
+        
+        .log-level-error {
+            color: var(--critical-red);
+        }
+        
+        .log-level-success {
+            color: var(--success-green);
+        }
+        
+        .filter-button {
+            transition: all 0.2s ease;
+        }
+        
+        .filter-button.active {
+            background: var(--photon-cyan);
+            color: var(--void-black);
+        }
+        
+        .chart-container {
+            height: 400px;
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .trade-row {
+            transition: all 0.2s ease;
+        }
+        
+        .trade-row:hover {
+            background: rgba(45, 125, 139, 0.1);
+        }
+        
+        .performance-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        
+        .performance-excellent {
+            background: var(--success-green);
+        }
+        
+        .performance-good {
+            background: var(--photon-cyan);
+        }
+        
+        .performance-average {
+            background: var(--warning-amber);
+        }
+        
+        .performance-poor {
+            background: var(--critical-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-bg"></div>
+    <div class="quantum-circuit"></div>
+    
+    <!-- Navigation -->
+    <nav class="glass-card mx-6 mt-6 p-4 sticky top-6 z-50">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="resources/logo.png" alt="Quantum Fusion" class="w-10 h-10">
+                <h1 class="text-xl font-bold">Quantum Fusion v9.0</h1>
+            </div>
+            <div class="flex items-center space-x-8">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="trading.html" class="nav-link">Trading</a>
+                <a href="analytics.html" class="nav-link text-photon-cyan font-semibold">Analytics</a>
+                <div class="flex items-center">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-sm">System Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Analytics Header -->
+    <section class="mx-6 mt-8">
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Analytics & Performance</h2>
+                    <p class="text-platinum-silver">Comprehensive analysis of trading performance and system metrics</p>
+                </div>
+                <div class="flex space-x-4">
+                    <button class="quantum-button" onclick="exportReport()">
+                        📊 Export Report
+                    </button>
+                    <button class="quantum-button" onclick="refreshData()">
+                        🔄 Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Analytics -->
+    <main class="mx-6 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column - Performance Charts -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- PNL Chart -->
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold">Profit & Loss Over Time</h3>
+                    <div class="flex space-x-2">
+                        <button class="filter-button active px-3 py-1 rounded text-sm" onclick="setTimeRange('24h')">24H</button>
+                        <button class="filter-button px-3 py-1 rounded text-sm" onclick="setTimeRange('7d')">7D</button>
+                        <button class="filter-button px-3 py-1 rounded text-sm" onclick="setTimeRange('30d')">30D</button>
+                        <button class="filter-button px-3 py-1 rounded text-sm" onclick="setTimeRange('90d')">90D</button>
+                    </div>
+                </div>
+                <div id="pnl-chart" class="chart-container"></div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-6">Performance Metrics</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-gray-800 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold profit-positive" id="total-return">+487%</div>
+                        <div class="text-sm text-platinum-silver mt-1">Total Return</div>
+                        <div class="performance-indicator performance-excellent"></div>
+                    </div>
+                    
+                    <div class="metric-card bg-gray-800 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold" id="sharpe-ratio">2.34</div>
+                        <div class="text-sm text-platinum-silver mt-1">Sharpe Ratio</div>
+                        <div class="performance-indicator performance-good"></div>
+                    </div>
+                    
+                    <div class="metric-card bg-gray-800 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold" id="max-drawdown">-12.4%</div>
+                        <div class="text-sm text-platinum-silver mt-1">Max Drawdown</div>
+                        <div class="performance-indicator performance-average"></div>
+                    </div>
+                    
+                    <div class="metric-card bg-gray-800 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold" id="volatility">18.7%</div>
+                        <div class="text-sm text-platinum-silver mt-1">Volatility</div>
+                        <div class="performance-indicator performance-good"></div>
+                    </div>
+                </div>
+                
+                <div id="performance-chart" class="chart-container"></div>
+            </div>
+
+            <!-- Trade Distribution -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-6">Trade Distribution Analysis</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Profitability by Symbol</h4>
+                        <div id="symbol-distribution-chart" class="chart-container"></div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Trade Success Rate</h4>
+                        <div id="success-rate-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Logs & Details -->
+        <div class="space-y-6">
+            
+            <!-- System Logs -->
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold">System Logs</h3>
+                    <div class="flex space-x-2">
+                        <button class="filter-button active px-2 py-1 rounded text-xs" onclick="filterLogs('all')">All</button>
+                        <button class="filter-button px-2 py-1 rounded text-xs" onclick="filterLogs('info')">Info</button>
+                        <button class="filter-button px-2 py-1 rounded text-xs" onclick="filterLogs('warning')">Warning</button>
+                        <button class="filter-button px-2 py-1 rounded text-xs" onclick="filterLogs('error')">Error</button>
+                    </div>
+                </div>
+                
+                <div class="bg-black rounded-lg p-4 h-96 overflow-y-auto font-mono text-xs" id="logs-container">
+                    <!-- Populated by JavaScript -->
+                </div>
+                
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-sm text-platinum-silver">Auto-scroll: 
+                        <input type="checkbox" id="auto-scroll" checked class="ml-2">
+                    </span>
+                    <button class="quantum-button text-sm px-3 py-1" onclick="clearLogs()">Clear</button>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Recent Trades</h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-platinum-silver">
+                                <th class="pb-2">Time</th>
+                                <th class="pb-2">Symbol</th>
+                                <th class="pb-2">Type</th>
+                                <th class="pb-2">PNL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-trades-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button class="w-full mt-4 text-photon-cyan text-sm hover:underline" onclick="viewAllTrades()">
+                    View All Trades →
+                </button>
+            </div>
+
+            <!-- Quantum Computation Logs -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Quantum Computation</h3>
+                
+                <div class="bg-black rounded-lg p-4 h-64 overflow-y-auto font-mono text-xs" id="quantum-logs">
+                    <!-- Populated by JavaScript -->
+                </div>
+                
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="status-indicator status-online"></span>
+                        <span class="text-sm">DE-VQE Optimizer: Active</span>
+                    </div>
+                    <button class="quantum-button text-sm px-3 py-1" onclick="exportQuantumLogs()">Export</button>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">System Health</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">API Latency</span>
+                        <div class="flex items-center">
+                            <span class="performance-indicator performance-excellent"></span>
+                            <span class="text-sm font-mono">12ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Quantum Core</span>
+                        <div class="flex items-center">
+                            <span class="performance-indicator performance-good"></span>
+                            <span class="text-sm">Operational</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Memory Usage</span>
+                        <div class="flex items-center">
+                            <span class="performance-indicator performance-average"></span>
+                            <span class="text-sm font-mono">67%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Error Rate</span>
+                        <div class="flex items-center">
+                            <span class="performance-indicator performance-excellent"></span>
+                            <span class="text-sm font-mono">0.02%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mx-6 mt-16 mb-6 p-6 glass-card text-center">
+        <p class="text-platinum-silver text-sm">
+            © 2025 Quantum Fusion v9.0 - Advanced Quantum Arbitrage Trading System
+        </p>
+    </footer>
+
+    <script>
+        // Analytics JavaScript
+        let currentTimeRange = '24h';
+        let currentLogFilter = 'all';
+        let logs = [];
+        let quantumLogs = [];
+
+        // Initialize analytics
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            generateSystemLogs();
+            generateQuantumLogs();
+            generateRecentTrades();
+            startRealTimeUpdates();
+        });
+
+        // Initialize all charts
+        function initializeCharts() {
+            initializePNLChart();
+            initializePerformanceChart();
+            initializeSymbolDistributionChart();
+            initializeSuccessRateChart();
+        }
+
+        // Initialize PNL chart
+        function initializePNLChart() {
+            const chartDom = document.getElementById('pnl-chart');
+            const myChart = echarts.init(chartDom, 'dark');
+            
+            const dates = [];
+            const pnlData = [];
+            const now = new Date();
+            
+            // Generate sample data for the last 24 hours
+            for (let i = 23; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 60 * 60 * 1000);
+                dates.push(date.toLocaleTimeString());
+                pnlData.push((Math.random() - 0.3) * 1000 + 500 * i);
+            }
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        return `${params[0].name}<br/>PNL: $${params[0].value.toFixed(2)}`;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates,
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#e2e8f0'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#e2e8f0',
+                        formatter: '${value}'
+                    }
+                },
+                series: [{
+                    name: 'PNL',
+                    type: 'line',
+                    data: pnlData,
+                    smooth: true,
+                    lineStyle: {
+                        color: '#00d4ff',
+                        width: 3
+                    },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(0, 212, 255, 0.3)'
+                            }, {
+                                offset: 1, color: 'rgba(0, 212, 255, 0.05)'
+                            }]
+                        }
+                    },
+                    itemStyle: {
+                        color: '#00d4ff'
+                    }
+                }]
+            };
+            
+            myChart.setOption(option);
+            window.pnlChart = myChart;
+        }
+
+        // Initialize performance chart
+        function initializePerformanceChart() {
+            const chartDom = document.getElementById('performance-chart');
+            const myChart = echarts.init(chartDom, 'dark');
+            
+            const dates = [];
+            const sharpeData = [];
+            const volatilityData = [];
+            const now = new Date();
+            
+            // Generate sample performance metrics
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                dates.push(date.toLocaleDateString());
+                sharpeData.push((Math.random() * 2 + 1.5).toFixed(2));
+                volatilityData.push((Math.random() * 10 + 15).toFixed(1));
+            }
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Sharpe Ratio', 'Volatility'],
+                    textStyle: {
+                        color: '#e2e8f0'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates,
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#e2e8f0'
+                    }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Sharpe Ratio',
+                        position: 'left',
+                        axisLine: {
+                            lineStyle: {
+                                color: '#2d7d8b'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    {
+                        type: 'value',
+                        name: 'Volatility (%)',
+                        position: 'right',
+                        axisLine: {
+                            lineStyle: {
+                                color: '#2d7d8b'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: 'Sharpe Ratio',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        data: sharpeData,
+                        smooth: true,
+                        lineStyle: {
+                            color: '#38a169',
+                            width: 2
+                        },
+                        itemStyle: {
+                            color: '#38a169'
+                        }
+                    },
+                    {
+                        name: 'Volatility',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: volatilityData,
+                        smooth: true,
+                        lineStyle: {
+                            color: '#d69e2e',
+                            width: 2
+                        },
+                        itemStyle: {
+                            color: '#d69e2e'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            window.performanceChart = myChart;
+        }
+
+        // Initialize symbol distribution chart
+        function initializeSymbolDistributionChart() {
+            const chartDom = document.getElementById('symbol-distribution-chart');
+            const myChart = echarts.init(chartDom, 'dark');
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: ${c} ({d}%)'
+                },
+                series: [{
+                    name: 'PNL by Symbol',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: [
+                        { value: 15420, name: 'BTC/USDT', itemStyle: { color: '#38a169' } },
+                        { value: 8920, name: 'ETH/USDT', itemStyle: { color: '#2d7d8b' } },
+                        { value: 4580, name: 'ADA/USDT', itemStyle: { color: '#00d4ff' } },
+                        { value: 3240, name: 'SOL/USDT', itemStyle: { color: '#d69e2e' } },
+                        { value: 2150, name: 'Others', itemStyle: { color: '#6b7280' } }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 212, 255, 0.5)'
+                        }
+                    },
+                    label: {
+                        color: '#e2e8f0'
+                    }
+                }]
+            };
+            
+            myChart.setOption(option);
+            window.symbolChart = myChart;
+        }
+
+        // Initialize success rate chart
+        function initializeSuccessRateChart() {
+            const chartDom = document.getElementById('success-rate-chart');
+            const myChart = echarts.init(chartDom, 'dark');
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['BTC', 'ETH', 'ADA', 'SOL', 'DOT', 'AVAX'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#e2e8f0'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    max: 100,
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#e2e8f0',
+                        formatter: '{value}%'
+                    }
+                },
+                series: [{
+                    name: 'Success Rate',
+                    type: 'bar',
+                    data: [92, 87, 89, 85, 91, 88],
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#38a169', '#2d7d8b', '#00d4ff', '#d69e2e'];
+                            return colors[params.dataIndex % colors.length];
+                        }
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 212, 255, 0.5)'
+                        }
+                    }
+                }]
+            };
+            
+            myChart.setOption(option);
+            window.successChart = myChart;
+        }
+
+        // Generate system logs
+        function generateSystemLogs() {
+            const logLevels = ['INFO', 'WARNING', 'ERROR', 'SUCCESS'];
+            const logMessages = [
+                'Quantum algorithm initialized successfully',
+                'Arbitrage opportunity detected for BTC/USDT',
+                'Order executed: BUY 0.025 BTC at $43,250',
+                'Circuit breaker status: Closed',
+                'Risk assessment completed - Low risk',
+                'WebSocket connection established',
+                'Market data updated successfully',
+                'Trade cycle completed with profit',
+                'Slippage within acceptable range',
+                'Portfolio rebalancing completed',
+                'Quantum state measurement: Optimal',
+                'Error fetching market data - Retrying',
+                'Position closed with profit: +$125.50',
+                'System health check passed',
+                'Emergency stop protocol tested'
+            ];
+            
+            logs = [];
+            const now = new Date();
+            
+            for (let i = 0; i < 50; i++) {
+                const level = logLevels[Math.floor(Math.random() * logLevels.length)];
+                const message = logMessages[Math.floor(Math.random() * logMessages.length)];
+                const timestamp = new Date(now.getTime() - i * 30000);
+                
+                logs.push({
+                    timestamp: timestamp,
+                    level: level,
+                    message: message
+                });
+            }
+            
+            renderSystemLogs();
+        }
+
+        // Render system logs
+        function renderSystemLogs() {
+            const container = document.getElementById('logs-container');
+            container.innerHTML = '';
+            
+            const filteredLogs = currentLogFilter === 'all' ? logs : logs.filter(log => log.level.toLowerCase() === currentLogFilter);
+            
+            filteredLogs.forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry p-2 border-b border-gray-800';
+                
+                const levelClass = `log-level-${log.level.toLowerCase()}`;
+                
+                entry.innerHTML = `
+                    <span class="text-gray-500">${log.timestamp.toLocaleTimeString()}</span>
+                    <span class="${levelClass} font-semibold">[${log.level}]</span>
+                    <span class="text-platinum-silver">${log.message}</span>
+                `;
+                
+                container.appendChild(entry);
+            });
+            
+            // Auto-scroll to bottom if enabled
+            if (document.getElementById('auto-scroll').checked) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        // Generate quantum computation logs
+        function generateQuantumLogs() {
+            const quantumMessages = [
+                '[DE-VQE] Quantum state preparation completed',
+                '[QUBO] Optimization problem formulated',
+                '[Pennylane] Circuit execution: 47ms',
+                '[Qiskit] Quantum walk initialized',
+                '[QA3C] Actor network updated successfully',
+                '[Oracle] Market prediction: 87% confidence',
+                '[QLSTM] Crash probability: 0.23%',
+                '[XMSS] Request signed with post-quantum security',
+                '[Circuit] 127-qubit simulation completed',
+                '[Entanglement] Multi-path correlation detected',
+                '[Optimization] Convergence achieved in 23 iterations',
+                '[Measurement] Quantum state collapsed to optimal solution',
+                '[Error] Quantum decoherence detected - Correcting',
+                '[Success] Quantum advantage confirmed',
+                '[Telemetry] Quantum core temperature: 0.015K'
+            ];
+            
+            quantumLogs = [];
+            const now = new Date();
+            
+            for (let i = 0; i < 30; i++) {
+                const message = quantumMessages[Math.floor(Math.random() * quantumMessages.length)];
+                const timestamp = new Date(now.getTime() - i * 45000);
+                
+                quantumLogs.push({
+                    timestamp: timestamp,
+                    message: message
+                });
+            }
+            
+            renderQuantumLogs();
+        }
+
+        // Render quantum logs
+        function renderQuantumLogs() {
+            const container = document.getElementById('quantum-logs');
+            container.innerHTML = '';
+            
+            quantumLogs.forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry p-2 border-b border-gray-800';
+                
+                entry.innerHTML = `
+                    <span class="text-gray-500">${log.timestamp.toLocaleTimeString()}</span>
+                    <span class="text-photon-cyan">${log.message}</span>
+                `;
+                
+                container.appendChild(entry);
+            });
+        }
+
+        // Generate recent trades
+        function generateRecentTrades() {
+            const trades = [];
+            const symbols = ['BTC/USDT', 'ETH/USDT', 'ADA/USDT', 'SOL/USDT', 'DOT/USDT'];
+            const types = ['Buy', 'Sell'];
+            const now = new Date();
+            
+            for (let i = 0; i < 15; i++) {
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const type = types[Math.floor(Math.random() * types.length)];
+                const pnl = (Math.random() - 0.4) * 200;
+                const timestamp = new Date(now.getTime() - i * 5 * 60000);
+                
+                trades.push({
+                    timestamp: timestamp,
+                    symbol: symbol,
+                    type: type,
+                    pnl: pnl
+                });
+            }
+            
+            renderRecentTrades(trades);
+        }
+
+        // Render recent trades
+        function renderRecentTrades(trades) {
+            const tbody = document.getElementById('recent-trades-table');
+            tbody.innerHTML = '';
+            
+            trades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.className = 'trade-row border-b border-gray-700';
+                
+                const pnlClass = trade.pnl >= 0 ? 'profit-positive' : 'profit-negative';
+                const pnlSign = trade.pnl >= 0 ? '+' : '';
+                const typeClass = trade.type === 'Buy' ? 'text-success-green' : 'text-critical-red';
+                
+                row.innerHTML = `
+                    <td class="py-2 font-mono">${trade.timestamp.toLocaleTimeString()}</td>
+                    <td class="py-2 font-mono">${trade.symbol}</td>
+                    <td class="py-2 ${typeClass}">${trade.type}</td>
+                    <td class="py-2 font-mono ${pnlClass}">${pnlSign}$${trade.pnl.toFixed(2)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Set time range for charts
+        function setTimeRange(range) {
+            currentTimeRange = range;
+            
+            // Update active button
+            document.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update charts (simulate data refresh)
+            initializePNLChart();
+            
+            console.log(`Time range updated to: ${range}`);
+        }
+
+        // Filter logs
+        function filterLogs(level) {
+            currentLogFilter = level;
+            
+            // Update active button
+            const buttons = event.target.parentElement.querySelectorAll('.filter-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderSystemLogs();
+        }
+
+        // Clear logs
+        function clearLogs() {
+            const container = document.getElementById('logs-container');
+            container.innerHTML = '<div class="text-center text-platinum-silver p-4">Logs cleared</div>';
+            
+            setTimeout(() => {
+                generateSystemLogs();
+            }, 2000);
+        }
+
+        // Export quantum logs
+        function exportQuantumLogs() {
+            const logText = quantumLogs.map(log => `${log.timestamp.toISOString()} - ${log.message}`).join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quantum-logs-${Date.now()}.txt`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Quantum logs exported successfully!');
+        }
+
+        // Export report
+        function exportReport() {
+            const reportData = {
+                timestamp: new Date().toISOString(),
+                totalReturn: '+487%',
+                sharpeRatio: 2.34,
+                maxDrawdown: '-12.4%',
+                volatility: '18.7%',
+                totalTrades: 1247,
+                successRate: '87.3%'
+            };
+            
+            const dataStr = JSON.stringify(reportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quantum-fusion-report-${Date.now()}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Performance report exported successfully!');
+        }
+
+        // Refresh data
+        function refreshData() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Refreshing...';
+            button.disabled = true;
+            
+            // Refresh all data
+            setTimeout(() => {
+                generateSystemLogs();
+                generateQuantumLogs();
+                generateRecentTrades();
+                initializeCharts();
+                
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Success feedback
+                anime({
+                    targets: button,
+                    backgroundColor: ['#2d7d8b', '#38a169', '#2d7d8b'],
+                    duration: 1000,
+                    easing: 'easeInOutQuad'
+                });
+            }, 2000);
+        }
+
+        // View all trades
+        function viewAllTrades() {
+            alert('Viewing all trades\n\nFeature coming soon!\n\nThis would open a detailed trade history view with advanced filtering and sorting options.');
+        }
+
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                // Add new log entries
+                if (Math.random() > 0.7) {
+                    const logLevels = ['INFO', 'WARNING', 'ERROR', 'SUCCESS'];
+                    const logMessages = [
+                        'Market data updated successfully',
+                        'Quantum algorithm iteration completed',
+                        'Risk assessment updated',
+                        'Portfolio rebalancing triggered',
+                        'Circuit breaker status checked'
+                    ];
+                    
+                    logs.unshift({
+                        timestamp: new Date(),
+                        level: logLevels[Math.floor(Math.random() * logLevels.length)],
+                        message: logMessages[Math.floor(Math.random() * logMessages.length)]
+                    });
+                    
+                    // Keep only last 50 logs
+                    if (logs.length > 50) {
+                        logs = logs.slice(0, 50);
+                    }
+                    
+                    renderSystemLogs();
+                }
+                
+                // Update charts occasionally
+                if (Math.random() > 0.8) {
+                    updateChartData();
+                }
+            }, 3000);
+        }
+
+        // Update chart data
+        function updateChartData() {
+            // Simulate real-time chart updates
+            if (window.pnlChart) {
+                const option = window.pnlChart.getOption();
+                const newData = option.series[0].data;
+                newData.push((Math.random() - 0.3) * 1000 + 500 * 24);
+                newData.shift();
+                
+                window.pnlChart.setOption({
+                    series: [{
+                        data: newData
+                    }]
+                });
+            }
+        }
+    </script>
+</body>
+</html>

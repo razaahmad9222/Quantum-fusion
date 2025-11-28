@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Fusion v9.0 - Trading Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --quantum-blue: #1a365d;
+            --neural-teal: #2d7d8b;
+            --photon-cyan: #00d4ff;
+            --void-black: #0a0a0a;
+            --platinum-silver: #e2e8f0;
+            --quantum-white: #f7fafc;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --critical-red: #e53e3e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--void-black);
+            color: var(--quantum-white);
+            overflow-x: hidden;
+        }
+        
+        .quantum-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--void-black) 0%, var(--quantum-blue) 50%, var(--neural-teal) 100%);
+            opacity: 0.1;
+        }
+        
+        .quantum-circuit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('resources/quantum_circuit_bg.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
+        
+        .glass-card {
+            background: rgba(26, 54, 93, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(45, 125, 139, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: var(--success-green);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-warning {
+            background: var(--warning-amber);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-error {
+            background: var(--critical-red);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .nav-link {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--photon-cyan);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--photon-cyan);
+            transition: width 0.2s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .quantum-button {
+            background: linear-gradient(135deg, var(--quantum-blue), var(--neural-teal));
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: var(--quantum-white);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quantum-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .quantum-button:active {
+            transform: translateY(0);
+        }
+        
+        .quantum-button.danger {
+            background: linear-gradient(135deg, #742a2a, var(--critical-red));
+        }
+        
+        .quantum-button.success {
+            background: linear-gradient(135deg, #22543d, var(--success-green));
+        }
+        
+        .number-input {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(45, 125, 139, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            color: var(--quantum-white);
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s ease;
+        }
+        
+        .number-input:focus {
+            outline: none;
+            border-color: var(--photon-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        .dropdown {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(45, 125, 139, 0.3);
+            border-radius: 6px;
+            color: var(--quantum-white);
+        }
+        
+        .dropdown:focus {
+            outline: none;
+            border-color: var(--photon-cyan);
+        }
+        
+        .order-book-row {
+            transition: all 0.2s ease;
+        }
+        
+        .order-book-row:hover {
+            background: rgba(45, 125, 139, 0.1);
+        }
+        
+        .position-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .position-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .profit-positive {
+            color: var(--success-green);
+        }
+        
+        .profit-negative {
+            color: var(--critical-red);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top: 2px solid var(--photon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .trade-history-row {
+            transition: all 0.2s ease;
+        }
+        
+        .trade-history-row:hover {
+            background: rgba(45, 125, 139, 0.1);
+        }
+        
+        #orderbook-chart {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-bg"></div>
+    <div class="quantum-circuit"></div>
+    
+    <!-- Navigation -->
+    <nav class="glass-card mx-6 mt-6 p-4 sticky top-6 z-50">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="resources/logo.png" alt="Quantum Fusion" class="w-10 h-10">
+                <h1 class="text-xl font-bold">Quantum Fusion v9.0</h1>
+            </div>
+            <div class="flex items-center space-x-8">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="trading.html" class="nav-link text-photon-cyan font-semibold">Trading</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <div class="flex items-center">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-sm">System Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Trading Interface -->
+    <main class="mx-6 mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Left Column - Order Placement -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- Symbol Selection -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Select Trading Pair</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-platinum-silver mb-2">Symbol</label>
+                        <select id="symbol-selector" class="dropdown w-full p-3" onchange="updateSymbolInfo()">
+                            <option value="BTC/USDT">BTC/USDT</option>
+                            <option value="ETH/USDT">ETH/USDT</option>
+                            <option value="ADA/USDT">ADA/USDT</option>
+                            <option value="SOL/USDT">SOL/USDT</option>
+                            <option value="DOT/USDT">DOT/USDT</option>
+                            <option value="AVAX/USDT">AVAX/USDT</option>
+                            <option value="MATIC/USDT">MATIC/USDT</option>
+                            <option value="LINK/USDT">LINK/USDT</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-platinum-silver">Current Price</span>
+                            <span class="font-mono text-photon-cyan" id="current-price">$43,250.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-sm text-platinum-silver">24h Change</span>
+                            <span class="font-mono profit-positive" id="price-change">+2.34%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Placement -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Place Order</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-platinum-silver mb-2">Order Type</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="quantum-button success text-sm py-2" id="buy-btn" onclick="setOrderType('buy')">
+                                Buy
+                            </button>
+                            <button class="quantum-button danger text-sm py-2" id="sell-btn" onclick="setOrderType('sell')">
+                                Sell
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-platinum-silver mb-2">Amount (USDT)</label>
+                        <input type="number" id="order-amount" class="number-input w-full" placeholder="1000.00" oninput="calculateEstimates()">
+                        <div class="flex justify-between mt-2">
+                            <button class="text-xs text-photon-cyan hover:underline" onclick="setAmount(100)">100</button>
+                            <button class="text-xs text-photon-cyan hover:underline" onclick="setAmount(500)">500</button>
+                            <button class="text-xs text-photon-cyan hover:underline" onclick="setAmount(1000)">1K</button>
+                            <button class="text-xs text-photon-cyan hover:underline" onclick="setAmount(5000)">5K</button>
+                            <button class="text-xs text-photon-cyan hover:underline" onclick="setAmount(10000)">10K</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-platinum-silver mb-2">Estimated Quantity</label>
+                        <input type="text" id="estimated-quantity" class="number-input w-full" readonly placeholder="0.0231 BTC">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-platinum-silver mb-2">Slippage Tolerance</label>
+                        <input type="range" id="slippage-slider" class="w-full" min="0.1" max="5" step="0.1" value="0.5" oninput="updateSlippage()">
+                        <div class="flex justify-between text-xs text-platinum-silver mt-1">
+                            <span>0.1%</span>
+                            <span id="slippage-value">0.5%</span>
+                            <span>5%</span>
+                        </div>
+                    </div>
+                    
+                    <button class="quantum-button w-full" onclick="executeOrder()">
+                        Execute Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- Risk Controls -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Risk Management</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Circuit Breaker</span>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-online"></span>
+                            <span class="text-sm">Closed</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Max Position Size</span>
+                        <span class="font-mono text-sm">$50,000</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Daily Loss Limit</span>
+                        <span class="font-mono text-sm">$2,000</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Auto Rollback</span>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="auto-rollback" class="mr-2" checked>
+                            <label for="auto-rollback" class="text-sm">Enabled</label>
+                        </div>
+                    </div>
+                    
+                    <button class="quantum-button danger w-full text-sm py-2" onclick="emergencyStop()">
+                        Emergency Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Column - Order Book & Chart -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Order Book Chart -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Live Order Book</h3>
+                <div id="orderbook-chart"></div>
+            </div>
+
+            <!-- Order Book Data -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Order Book - BTC/USDT</h3>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Buy Orders -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-success-green mb-3">Buy Orders</h4>
+                        <div class="space-y-1 text-sm" id="buy-orders">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Sell Orders -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-critical-red mb-3">Sell Orders</h4>
+                        <div class="space-y-1 text-sm" id="sell-orders">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Recent Trades</h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-platinum-silver">
+                                <th class="pb-3">Time</th>
+                                <th class="pb-3">Type</th>
+                                <th class="pb-3">Price</th>
+                                <th class="pb-3">Amount</th>
+                                <th class="pb-3">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trade-history">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Positions & Portfolio -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- Current Positions -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Open Positions</h3>
+                
+                <div class="space-y-4" id="open-positions">
+                    <!-- Populated by JavaScript -->
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Total PNL</span>
+                        <span class="font-mono profit-positive" id="total-pnl">+$1,245.30</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Summary -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Portfolio Summary</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Total Balance</span>
+                        <span class="font-mono">$125,430.50</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Available</span>
+                        <span class="font-mono">$98,185.20</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">In Positions</span>
+                        <span class="font-mono">$27,245.30</span>
+                    </div>
+                    
+                    <div class="w-full bg-gray-700 rounded-full h-2 mt-4">
+                        <div class="bg-photon-cyan h-2 rounded-full" style="width: 21.7%"></div>
+                    </div>
+                    <div class="text-xs text-platinum-silver text-center">21.7% of portfolio in positions</div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Today's Stats</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Trades Executed</span>
+                        <span class="font-mono">23</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Success Rate</span>
+                        <span class="font-mono profit-positive">91.3%</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Total Volume</span>
+                        <span class="font-mono">$45,230</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-platinum-silver">Daily PNL</span>
+                        <span class="font-mono profit-positive">+$2,450</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Sentiment -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold mb-4">Market Sentiment</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Fear & Greed</span>
+                        <div class="flex items-center">
+                            <div class="w-16 h-2 bg-gray-700 rounded-full mr-2">
+                                <div class="h-2 bg-warning-amber rounded-full" style="width: 67%"></div>
+                            </div>
+                            <span class="text-sm">67</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Volatility</span>
+                        <span class="text-sm profit-positive">Low</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-platinum-silver">Trend</span>
+                        <span class="text-sm">Bullish</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mx-6 mt-16 mb-6 p-6 glass-card text-center">
+        <p class="text-platinum-silver text-sm">
+            © 2025 Quantum Fusion v9.0 - Advanced Quantum Arbitrage Trading System
+        </p>
+    </footer>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="glass-card p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4">Confirm Order Execution</h3>
+            <div id="confirmation-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <div class="flex space-x-4 mt-6">
+                <button class="quantum-button flex-1" onclick="confirmOrder()">Confirm</button>
+                <button class="quantum-button danger flex-1" onclick="closeConfirmationModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trading Interface JavaScript
+        let currentOrderType = 'buy';
+        let pendingOrder = null;
+
+        // Initialize trading interface
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeOrderBookChart();
+            generateOrderBookData();
+            generateTradeHistory();
+            generateOpenPositions();
+            startRealTimeUpdates();
+        });
+
+        // Initialize order book chart
+        function initializeOrderBookChart() {
+            const chartDom = document.getElementById('orderbook-chart');
+            const myChart = echarts.init(chartDom, 'dark');
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: [],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#2d7d8b'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Buy Orders',
+                        type: 'bar',
+                        stack: 'orders',
+                        data: [],
+                        itemStyle: {
+                            color: '#38a169'
+                        }
+                    },
+                    {
+                        name: 'Sell Orders',
+                        type: 'bar',
+                        stack: 'orders',
+                        data: [],
+                        itemStyle: {
+                            color: '#e53e3e'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // Store chart instance for updates
+            window.orderBookChart = myChart;
+        }
+
+        // Generate order book data
+        function generateOrderBookData() {
+            const basePrice = 43250;
+            const buyOrders = [];
+            const sellOrders = [];
+            
+            // Generate buy orders
+            for (let i = 0; i < 20; i++) {
+                const price = basePrice - (i + 1) * 5;
+                const quantity = Math.random() * 2 + 0.1;
+                buyOrders.push({ price: price.toFixed(2), quantity: quantity.toFixed(4) });
+            }
+            
+            // Generate sell orders
+            for (let i = 0; i < 20; i++) {
+                const price = basePrice + (i + 1) * 5;
+                const quantity = Math.random() * 2 + 0.1;
+                sellOrders.push({ price: price.toFixed(2), quantity: quantity.toFixed(4) });
+            }
+            
+            // Render order book
+            renderOrderBook(buyOrders, sellOrders);
+        }
+
+        // Render order book
+        function renderOrderBook(buyOrders, sellOrders) {
+            const buyContainer = document.getElementById('buy-orders');
+            const sellContainer = document.getElementById('sell-orders');
+            
+            buyContainer.innerHTML = '';
+            sellContainer.innerHTML = '';
+            
+            buyOrders.slice(0, 15).forEach(order => {
+                const row = document.createElement('div');
+                row.className = 'order-book-row flex justify-between py-1';
+                row.innerHTML = `
+                    <span class="text-success-green">${order.price}</span>
+                    <span class="text-platinum-silver">${order.quantity}</span>
+                `;
+                buyContainer.appendChild(row);
+            });
+            
+            sellOrders.slice(0, 15).forEach(order => {
+                const row = document.createElement('div');
+                row.className = 'order-book-row flex justify-between py-1';
+                row.innerHTML = `
+                    <span class="text-critical-red">${order.price}</span>
+                    <span class="text-platinum-silver">${order.quantity}</span>
+                `;
+                sellContainer.appendChild(row);
+            });
+        }
+
+        // Generate trade history
+        function generateTradeHistory() {
+            const trades = [];
+            const types = ['Buy', 'Sell'];
+            const now = Date.now();
+            
+            for (let i = 0; i < 20; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const price = 43250 + (Math.random() - 0.5) * 1000;
+                const amount = Math.random() * 2 + 0.01;
+                const value = price * amount;
+                
+                trades.push({
+                    time: new Date(now - i * 60000).toLocaleTimeString(),
+                    type: type,
+                    price: price.toFixed(2),
+                    amount: amount.toFixed(4),
+                    value: value.toFixed(2)
+                });
+            }
+            
+            renderTradeHistory(trades);
+        }
+
+        // Render trade history
+        function renderTradeHistory(trades) {
+            const tbody = document.getElementById('trade-history');
+            tbody.innerHTML = '';
+            
+            trades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.className = 'trade-history-row border-b border-gray-700';
+                
+                const typeClass = trade.type === 'Buy' ? 'text-success-green' : 'text-critical-red';
+                
+                row.innerHTML = `
+                    <td class="py-2 font-mono">${trade.time}</td>
+                    <td class="py-2 ${typeClass}">${trade.type}</td>
+                    <td class="py-2 font-mono">$${trade.price}</td>
+                    <td class="py-2 font-mono">${trade.amount}</td>
+                    <td class="py-2 font-mono">$${trade.value}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Generate open positions
+        function generateOpenPositions() {
+            const positions = [
+                {
+                    symbol: 'BTC/USDT',
+                    type: 'Long',
+                    amount: 0.15,
+                    entryPrice: 42150.00,
+                    currentPrice: 43250.00,
+                    pnl: 165.00
+                },
+                {
+                    symbol: 'ETH/USDT',
+                    type: 'Long',
+                    amount: 2.5,
+                    entryPrice: 2580.00,
+                    currentPrice: 2650.00,
+                    pnl: 175.00
+                },
+                {
+                    symbol: 'ADA/USDT',
+                    type: 'Short',
+                    amount: 1000,
+                    entryPrice: 0.495,
+                    currentPrice: 0.485,
+                    pnl: 10.00
+                }
+            ];
+            
+            renderOpenPositions(positions);
+        }
+
+        // Render open positions
+        function renderOpenPositions(positions) {
+            const container = document.getElementById('open-positions');
+            container.innerHTML = '';
+            
+            positions.forEach(position => {
+                const card = document.createElement('div');
+                card.className = 'position-card bg-gray-800 rounded-lg p-4';
+                
+                const pnlClass = position.pnl >= 0 ? 'profit-positive' : 'profit-negative';
+                const pnlSign = position.pnl >= 0 ? '+' : '';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-mono font-semibold">${position.symbol}</span>
+                        <span class="text-xs px-2 py-1 rounded ${position.type === 'Long' ? 'bg-success-green' : 'bg-critical-red'}">${position.type}</span>
+                    </div>
+                    <div class="space-y-1 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-platinum-silver">Amount:</span>
+                            <span class="font-mono">${position.amount}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-platinum-silver">Entry:</span>
+                            <span class="font-mono">$${position.entryPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-platinum-silver">Current:</span>
+                            <span class="font-mono">$${position.currentPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-platinum-silver">PNL:</span>
+                            <span class="font-mono ${pnlClass}">${pnlSign}$${position.pnl.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 mt-3">
+                        <button class="quantum-button text-xs px-3 py-1 flex-1" onclick="closePosition('${position.symbol}')">
+                            Close
+                        </button>
+                        <button class="quantum-button text-xs px-3 py-1 flex-1" onclick="editPosition('${position.symbol}')">
+                            Edit
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Update symbol information
+        function updateSymbolInfo() {
+            const symbol = document.getElementById('symbol-selector').value;
+            const prices = {
+                'BTC/USDT': { price: 43250.00, change: '+2.34%' },
+                'ETH/USDT': { price: 2650.00, change: '+1.87%' },
+                'ADA/USDT': { price: 0.485, change: '-0.45%' },
+                'SOL/USDT': { price: 98.50, change: '+3.21%' },
+                'DOT/USDT': { price: 7.25, change: '+0.92%' },
+                'AVAX/USDT': { price: 35.80, change: '+1.45%' },
+                'MATIC/USDT': { price: 0.92, change: '+2.18%' },
+                'LINK/USDT': { price: 14.65, change: '-1.23%' }
+            };
+            
+            const info = prices[symbol];
+            if (info) {
+                document.getElementById('current-price').textContent = `$${info.price.toLocaleString()}`;
+                document.getElementById('price-change').textContent = info.change;
+                document.getElementById('price-change').className = info.change.startsWith('+') ? 'font-mono profit-positive' : 'font-mono profit-negative';
+            }
+            
+            calculateEstimates();
+        }
+
+        // Set order type
+        function setOrderType(type) {
+            currentOrderType = type;
+            
+            const buyBtn = document.getElementById('buy-btn');
+            const sellBtn = document.getElementById('sell-btn');
+            
+            if (type === 'buy') {
+                buyBtn.className = 'quantum-button success text-sm py-2';
+                sellBtn.className = 'quantum-button text-sm py-2';
+            } else {
+                buyBtn.className = 'quantum-button text-sm py-2';
+                sellBtn.className = 'quantum-button danger text-sm py-2';
+            }
+        }
+
+        // Set amount
+        function setAmount(amount) {
+            document.getElementById('order-amount').value = amount;
+            calculateEstimates();
+        }
+
+        // Calculate estimates
+        function calculateEstimates() {
+            const amount = parseFloat(document.getElementById('order-amount').value) || 0;
+            const symbol = document.getElementById('symbol-selector').value;
+            const priceText = document.getElementById('current-price').textContent.replace('$', '').replace(',', '');
+            const price = parseFloat(priceText) || 1;
+            
+            let quantity = 0;
+            if (symbol === 'BTC/USDT') quantity = amount / price;
+            else if (symbol === 'ETH/USDT') quantity = amount / price;
+            else if (symbol === 'ADA/USDT') quantity = amount / price;
+            else quantity = amount / price;
+            
+            document.getElementById('estimated-quantity').value = `${quantity.toFixed(6)} ${symbol.split('/')[0]}`;
+        }
+
+        // Update slippage
+        function updateSlippage() {
+            const value = document.getElementById('slippage-slider').value;
+            document.getElementById('slippage-value').textContent = `${value}%`;
+        }
+
+        // Execute order
+        function executeOrder() {
+            const amount = parseFloat(document.getElementById('order-amount').value);
+            const symbol = document.getElementById('symbol-selector').value;
+            const slippage = document.getElementById('slippage-slider').value;
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            pendingOrder = {
+                type: currentOrderType,
+                symbol: symbol,
+                amount: amount,
+                slippage: slippage
+            };
+            
+            showConfirmationModal();
+        }
+
+        // Show confirmation modal
+        function showConfirmationModal() {
+            const modal = document.getElementById('confirmation-modal');
+            const content = document.getElementById('confirmation-content');
+            
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span>Order Type:</span>
+                        <span class="font-semibold ${pendingOrder.type === 'buy' ? 'text-success-green' : 'text-critical-red'}">${pendingOrder.type.toUpperCase()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Symbol:</span>
+                        <span class="font-mono">${pendingOrder.symbol}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Amount:</span>
+                        <span class="font-mono">$${pendingOrder.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Slippage:</span>
+                        <span class="font-mono">${pendingOrder.slippage}%</span>
+                    </div>
+                    <div class="text-xs text-platinum-silver mt-4">
+                        ⚠️ This order will be executed at market price with the specified slippage tolerance.
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Close confirmation modal
+        function closeConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+            pendingOrder = null;
+        }
+
+        // Confirm order
+        function confirmOrder() {
+            if (!pendingOrder) return;
+            
+            closeConfirmationModal();
+            
+            // Simulate order execution
+            const button = document.querySelector('button[onclick="executeOrder()"]');
+            const originalText = button.textContent;
+            button.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Executing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Success feedback
+                anime({
+                    targets: button,
+                    backgroundColor: ['#2d7d8b', '#38a169', '#2d7d8b'],
+                    duration: 1000,
+                    easing: 'easeInOutQuad'
+                });
+                
+                alert(`✅ Order executed successfully!\n\n${pendingOrder.type.toUpperCase()} ${pendingOrder.symbol}\nAmount: $${pendingOrder.amount.toLocaleString()}\n\nThe order has been filled at market price.`);
+                
+                // Clear form
+                document.getElementById('order-amount').value = '';
+                document.getElementById('estimated-quantity').value = '';
+                
+                pendingOrder = null;
+            }, 2000);
+        }
+
+        // Close position
+        function closePosition(symbol) {
+            const confirmed = confirm(`Close position for ${symbol}?`);
+            if (confirmed) {
+                alert(`✅ Position for ${symbol} has been closed.`);
+                // Remove position from UI
+                generateOpenPositions();
+            }
+        }
+
+        // Edit position
+        function editPosition(symbol) {
+            alert(`Edit position for ${symbol}\n\nFeature coming soon!`);
+        }
+
+        // Emergency stop
+        function emergencyStop() {
+            const confirmed = confirm('🚨 EMERGENCY STOP\n\nThis will immediately halt all trading operations and close all positions. Are you sure?');
+            if (confirmed) {
+                alert('🚨 EMERGENCY STOP ACTIVATED!\n\nAll trading operations have been halted.\nAll positions have been closed.\nCircuit breaker is now open.');
+            }
+        }
+
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                // Simulate price updates
+                updateSymbolInfo();
+                
+                // Update order book
+                generateOrderBookData();
+                
+                // Update trade history
+                generateTradeHistory();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
